@@ -1,0 +1,35 @@
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import linear_kernel
+
+# Load movie dataset (you can replace this with your own dataset)
+movies = pd.DataFrame({
+    'title': ['Movie 1', 'Movie 2', 'Movie 3', 'Movie 4', 'Movie 5'],
+    'description': [
+        'A story about a hero and a villain',
+        'A romantic comedy set in New York',
+        'A sci-fi adventure in space',
+        'A mystery thriller with unexpected twists',
+        'A fantasy epic in a magical world'
+    ]
+})
+
+# Vectorize the descriptions
+tfidf = TfidfVectorizer(stop_words='english')
+tfidf_matrix = tfidf.fit_transform(movies['description'])
+
+# Compute similarity scores
+cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
+
+# Function to get movie recommendations
+def get_recommendations(title, cosine_sim=cosine_sim):
+    idx = movies[movies['title'] == title].index[0]
+    sim_scores = list(enumerate(cosine_sim[idx]))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    sim_scores = sim_scores[1:4]  # Top 3 recommendations
+    movie_indices = [i[0] for i in sim_scores]
+    return movies['title'].iloc[movie_indices]
+
+# Example usage
+recommended_movies = get_recommendations('Movie 1')
+print(recommended_movies)
